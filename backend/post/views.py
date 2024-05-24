@@ -18,7 +18,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 # Load amharic tokenizer and model for text classification
 with open(os.path.join("ML_MODEL", "tokenizer.pickle"), "rb") as handle:
     sentence_tokenizer = pickle.load(handle)
-    
+
 # Load english tokenizer and model for text classification
 with open(os.path.join("ML_MODEL", "english_tokenizer.pickle"), "rb") as handle:
     english_sentence_tokenizer = pickle.load(handle)
@@ -104,7 +104,10 @@ def postApi(request):
             )
             prediction_text = englishModel.predict(padded_sequence)
             print(prediction_text)
-            isHatefulText = prediction_text[0][0] > prediction_text[0][2] or prediction_text[0][1] > prediction_text[0][2]
+            isHatefulText = (
+                prediction_text[0][0] > prediction_text[0][2]
+                or prediction_text[0][1] > prediction_text[0][2]
+            )
         else:
             print("is amharic")
             sequences = sentence_tokenizer.texts_to_sequences([content])
