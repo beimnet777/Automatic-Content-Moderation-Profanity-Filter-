@@ -1,6 +1,7 @@
 from post.models import Post
 from .models import *
 from rest_framework.serializers import ModelSerializer,SerializerMethodField
+from django.db.models import Q
 
 
 class ProfileSerializer(ModelSerializer):
@@ -35,7 +36,7 @@ class UserPostSerializer(ModelSerializer):
         return Post.objects.filter(user=object).count()
 
     def get_hateful_post_count(self,object):
-        return Post.objects.filter(user=object,is_hateful=True).count()
+        return Post.objects.filter(Q(user=object) | Q(is_content_hateful=True) | Q(is_audio_hateful=True)).count()
     
     class Meta:
         model = User

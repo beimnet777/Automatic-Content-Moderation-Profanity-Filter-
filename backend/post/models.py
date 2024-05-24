@@ -11,7 +11,8 @@ class Post(models.Model):
     audio = models.FileField(blank=True, null=True, upload_to=upload_to)
     content = models.TextField()
     user = models.ForeignKey(User,on_delete=models.CASCADE)
-    is_hateful = models.BooleanField()
+    is_content_hateful = models.BooleanField()
+    is_audio_hateful = models.BooleanField()
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
