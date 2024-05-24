@@ -15,16 +15,23 @@ import torch
 from transformers import Wav2Vec2ForCTC, AutoProcessor
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-# Load tokenizer and model for text classification
+# Load amharic tokenizer and model for text classification
 with open(os.path.join("ML_MODEL", "tokenizer.pickle"), "rb") as handle:
     sentence_tokenizer = pickle.load(handle)
+    
+# Load english tokenizer and model for text classification
+with open(os.path.join("ML_MODEL", "english_tokenizer.pickle"), "rb") as handle:
+    english_sentence_tokenizer = pickle.load(handle)
 
 amharicModel = tf.keras.models.load_model(
     "ML_MODEL/amharic.h5", custom_objects=None, compile=True, options=None
 )
 
 englishModel = tf.keras.models.load_model(
-    "ML_MODEL/english.h5", custom_objects=None, compile=True, options=None
+    "ML_MODEL/hate_speech_detection_english_model.h5",
+    custom_objects=None,
+    compile=True,
+    options=None,
 )
 
 
@@ -47,16 +54,13 @@ def asr(file_name):
 
 # detect language of text
 def detect_language(text):
-    # Check if the text contains only ASCII characters
     if all(ord(char) < 128 for char in text):
         return "English"
 
-    # Check if the text contains Amharic characters
     amharic_chars = "".join([chr(i) for i in range(4608, 4879)])
     if any(char in amharic_chars for char in text):
         return "Amharic"
 
-    # If the text contains neither ASCII nor Amharic characters, return 'Unknown'
     return "Unknown"
 
 
@@ -91,15 +95,22 @@ def postApi(request):
         user = request.user
 
         max_length = 50
-        sequences = sentence_tokenizer.texts_to_sequences([content])
-        padded_sequence = tf.keras.preprocessing.sequence.pad_sequences(
-            sequences, maxlen=max_length, padding="pre", truncating="pre"
-        )
         # Classify the text content
         if detect_language(content) == "English":
+            print("is english")
+            sequences = english_sentence_tokenizer.texts_to_sequences([content])
+            padded_sequence = tf.keras.preprocessing.sequence.pad_sequences(
+                sequences, maxlen=max_length, padding="pre", truncating="pre"
+            )
             prediction_text = englishModel.predict(padded_sequence)
-            isHatefulText = prediction_text[0][0] > 0.75
+            print(prediction_text)
+            isHatefulText = prediction_text[0][0] > prediction_text[0][2] or prediction_text[0][1] > prediction_text[0][2]
         else:
+            print("is amharic")
+            sequences = sentence_tokenizer.texts_to_sequences([content])
+            padded_sequence = tf.keras.preprocessing.sequence.pad_sequences(
+                sequences, maxlen=max_length, padding="pre", truncating="pre"
+            )
             prediction_text = amharicModel.predict(padded_sequence)
             isHatefulText = prediction_text[0][0] > 0.75
 
@@ -123,12 +134,8 @@ def postApi(request):
                 padded_sequence_audio = tf.keras.preprocessing.sequence.pad_sequences(
                     sequences_audio, maxlen=max_length, padding="pre", truncating="pre"
                 )
-                if detect_language(transcribed_text) == "English":
-                    prediction_audio = englishModel.predict(padded_sequence_audio)
-                    isHatefulAudio = prediction_audio[0][0] > 0.75
-                else:
-                    prediction_audio = englishModel.predict(padded_sequence_audio)
-                    isHatefulAudio = prediction_audio[0][0] > 0.75
+                prediction_audio = englishModel.predict(padded_sequence_audio)
+                isHatefulAudio = prediction_audio[0][0] > 0.75
 
             finally:
                 os.remove(temp_audio_path)

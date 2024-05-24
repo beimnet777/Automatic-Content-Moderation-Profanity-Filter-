@@ -6,7 +6,7 @@ from .models import *
 from .profile_serializers import *
 from rest_framework import response
 from django.contrib.auth.models import User
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -15,6 +15,7 @@ from rest_framework.decorators import parser_classes
 
 # create a user
 @api_view(["POST"])
+@permission_classes([AllowAny])
 @parser_classes([MultiPartParser, FormParser])
 def createUser(request):
     user_data = request.data
@@ -31,9 +32,10 @@ def createUser(request):
             user = User.objects.create_user(**new_user)
             savedUser = User.objects.get(username=user.username)
             profile = Profile.objects.create(
-                user=savedUser, image=user_data["image"])
+                user=savedUser, image=user_data.get("image",None))
             return Response(status=201)
         except Exception as error:
+            print(error)
             return Response(status=401)
 
 
