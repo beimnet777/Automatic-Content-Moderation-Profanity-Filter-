@@ -16,8 +16,7 @@ class PostSerializer(ModelSerializer):
         return len(liked) > 0
 
     def get_user(self, object):
-        request = self.context.get('request', None)
-        user = request.user
+        user = object.user
         try:
             image = Profile.objects.get(user = user).image.url
         except:
@@ -35,7 +34,6 @@ class CommentSerializer(ModelSerializer):
 
     def get_user(self, object):
         user = object.user
-        print(user)
         profile = Profile.objects.filter(user = user)
         if len(profile) == 0:
             image = ""
