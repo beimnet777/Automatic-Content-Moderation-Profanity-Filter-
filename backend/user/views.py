@@ -142,7 +142,7 @@ def generalStatistics(request):
     if not request.user.is_superuser:
         return Response(status=403)
     try:
-        hatefulCount = Post.objects.filter(is_hateful = True).count()
+        hatefulCount = Post.objects.filter(Q(is_content_hateful=True) | Q(is_audio_hateful=True)).count()
         totalPostCount = Post.objects.all().count()
         totalUser = User.objects.all().count()
         followingCount = Following.objects.all().count()

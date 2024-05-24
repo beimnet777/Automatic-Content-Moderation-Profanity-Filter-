@@ -5,7 +5,7 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ("id", "content", "user", "post")
 
 class PostAdmin(admin.ModelAdmin):
-    list_display = ("id", "content", "user", "image", "is_hateful", "created")
+    list_display = ("id", "content", "user", "image", "is_audio_hateful", "is_content_hateful", "created")
 
 class LikeAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "post")

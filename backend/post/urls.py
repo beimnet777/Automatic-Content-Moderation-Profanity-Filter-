@@ -6,7 +6,7 @@ urlpatterns = [
     path('posts/my/',views.getMyPosts),
     path('posts/',views.postApi),
     path('posts/<str:pk>/',views.deletePost),
-    path('posts/admin/hateful/',views.getHatefulPosts),
+    path('posts/admin/hateful/<str:type>/', views.getHatefulPosts, name='get-hateful-posts'),
     path('posts/comments/<str:pk>/',views.commentApi),#post id
     path('comments/<str:pk>/',views.deleteComment),#comment id
     path('likes/<str:pk>/',views.likeApi),

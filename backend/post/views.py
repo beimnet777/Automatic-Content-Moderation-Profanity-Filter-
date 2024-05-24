@@ -71,8 +71,8 @@ def detect_language(text):
 def postApi(request):
     if request.method == "GET":
         try:
-            posts = Post.objects.filter(Q(user=request.user) | Q(is_hateful=False))
-            serializer = PostSerializer(posts, context={"request": request}, many=True)
+            posts = Post.objects.filter(Q(user=request.user) | Q(is_content_hateful=False) | Q(is_audio_hateful=False))
+            serializer = PostSerializer(posts, context={'request': request}, many=True)
             return Response(serializer.data)
         except Exception as e:
             print(e, "the error")
@@ -82,7 +82,7 @@ def postApi(request):
         postData = request.data
         image, audio = None, None
         try:
-            image = postData["image"]
+            image = postData['image']
         except KeyError:
             pass
 
@@ -189,17 +189,31 @@ def getMyPosts(request):
 
 
 # returns the list of posts that contain hate speeches for the admin
-@api_view(["GET"])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def getHatefulPosts(request):
+def getHatefulPosts(request, type):
     if not request.user.is_superuser:
         return Response(status=403)
     try:
-        posts = Post.objects.filter(is_hateful=True)
-        serilizer = PostSerializer(posts, context={"request": request}, many=True)
-        return Response(serilizer.data)
-    except:
-        return Response(status=500)
+        if type == 'all':
+            posts = Post.objects.filter(
+                Q(is_content_hateful=True) | Q(is_audio_hateful=True)
+            )
+        elif type == 'audio':
+            posts = Post.objects.filter(
+                is_audio_hateful=True
+            )
+        elif type == 'text':
+            posts = Post.objects.filter(
+                is_content_hateful=True
+            )
+        else:
+            return Response({"error": "Invalid type parameter"}, status=400)
+        
+        serializer = PostSerializer(posts, context={"request": request}, many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 
 
 # create a comment on a post
@@ -254,7 +268,7 @@ def deleteComment(request, pk):
 @permission_classes([IsAuthenticated])
 def likeApi(request, pk):
     post = Post.objects.get(id=pk)
-    if request.method == "POST":
+    if request.method == 'POST':
         try:
             previous = Like.objects.filter(post=post)
             if len(previous) > 0:
@@ -263,7 +277,7 @@ def likeApi(request, pk):
             return Response(status=200)
         except:
             return Response(status=500)
-    elif request.method == "DELETE":
+    elif request.method == 'DELETE':
         try:
             like = Like.objects.get(post=post, user=request.user)
             like.delete()

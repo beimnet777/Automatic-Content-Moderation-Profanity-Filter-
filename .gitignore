@@ -1,0 +1,35 @@
+# Ignore media files in the backend folder
+/backend/mediafiles/*
+/backend/mediafiles/**
+
+# Ignore Python cache in the backend folder
+/backend/**/__pycache__/**
+/backend/*.py[cod]
+/backend/*$py.class
+
+# Ignore other Python virtual environment files
+/backend/*.env
+/backend/*.venv
+/backend/env/
+/backend/venv/
+/backend/ENV/
+/backend/env.bak/
+/backend/venv.bak/
+
+# Ignore IDE and editor specific files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Ignore Django specific files in the backend folder
+/backend/db.sqlite3
+/backend/*.log
+
+# Ignore node_modules (if any frontend code exists)
+node_modules/
+
+# Ignore other system files
+.DS_Store
+*.swp
+*~
