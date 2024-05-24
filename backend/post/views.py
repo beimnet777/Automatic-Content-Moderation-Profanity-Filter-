@@ -19,20 +19,11 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 with open(os.path.join("ML_MODEL", "tokenizer.pickle"), "rb") as handle:
     sentence_tokenizer = pickle.load(handle)
 
-# Load english tokenizer and model for text classification
-with open(os.path.join("ML_MODEL", "english_tokenizer.pickle"), "rb") as handle:
-    english_sentence_tokenizer = pickle.load(handle)
-
 amharicModel = tf.keras.models.load_model(
     "ML_MODEL/amharic.h5", custom_objects=None, compile=True, options=None
 )
 
-englishModel = tf.keras.models.load_model(
-    "ML_MODEL/hate_speech_detection_english_model.h5",
-    custom_objects=None,
-    compile=True,
-    options=None,
-)
+
 
 
 # ASR function
@@ -97,17 +88,18 @@ def postApi(request):
         max_length = 50
         # Classify the text content
         if detect_language(content) == "English":
-            print("is english")
-            sequences = english_sentence_tokenizer.texts_to_sequences([content])
-            padded_sequence = tf.keras.preprocessing.sequence.pad_sequences(
-                sequences, maxlen=max_length, padding="pre", truncating="pre"
-            )
-            prediction_text = englishModel.predict(padded_sequence)
-            print(prediction_text)
-            isHatefulText = (
-                prediction_text[0][0] > prediction_text[0][2]
-                or prediction_text[0][1] > prediction_text[0][2]
-            )
+            # print("is english")
+            # sequences = english_sentence_tokenizer.texts_to_sequences([content])
+            # padded_sequence = tf.keras.preprocessing.sequence.pad_sequences(
+            #     sequences, maxlen=max_length, padding="pre", truncating="pre"
+            # )
+            # prediction_text = englishModel.predict(padded_sequence)
+            # print(prediction_text)
+            # isHatefulText = (
+            #     prediction_text[0][0] > prediction_text[0][2]
+            #     or prediction_text[0][1] > prediction_text[0][2]
+            # )
+            pass
         else:
             print("is amharic")
             sequences = sentence_tokenizer.texts_to_sequences([content])
