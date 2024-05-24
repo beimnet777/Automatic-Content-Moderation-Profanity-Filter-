@@ -84,6 +84,7 @@ def postApi(request):
 
         content = postData["content"]
         user = request.user
+        is_content_hateful = False
 
         max_length = 50
         # Classify the text content
@@ -95,7 +96,7 @@ def postApi(request):
             # )
             # prediction_text = englishModel.predict(padded_sequence)
             # print(prediction_text)
-            # isHatefulText = (
+            # is_content_hateful = (
             #     prediction_text[0][0] > prediction_text[0][2]
             #     or prediction_text[0][1] > prediction_text[0][2]
             # )
@@ -107,10 +108,10 @@ def postApi(request):
                 sequences, maxlen=max_length, padding="pre", truncating="pre"
             )
             prediction_text = amharicModel.predict(padded_sequence)
-            isHatefulText = prediction_text[0][0] > 0.75
+            is_content_hateful = prediction_text[0][0] > 0.75
 
-        # Initialize isHatefulAudio to False
-        isHatefulAudio = False
+        # Initialize is_audio_hateful to False
+        is_audio_hateful = False
 
         # Process and classify the audio content if available
         if audio and isinstance(audio, InMemoryUploadedFile):
@@ -129,13 +130,11 @@ def postApi(request):
                 padded_sequence_audio = tf.keras.preprocessing.sequence.pad_sequences(
                     sequences_audio, maxlen=max_length, padding="pre", truncating="pre"
                 )
-                prediction_audio = englishModel.predict(padded_sequence_audio)
-                isHatefulAudio = prediction_audio[0][0] > 0.75
+                prediction_audio = amharicModel.predict(padded_sequence_audio)
+                is_audio_hateful = prediction_audio[0][0] > 0.75
 
             finally:
                 os.remove(temp_audio_path)
-
-        isHateful = isHatefulText or isHatefulAudio
 
         try:
             Post.objects.create(
@@ -143,7 +142,8 @@ def postApi(request):
                 audio=audio,
                 content=content,
                 user=user,
-                is_hateful=isHateful,
+                is_content_hateful=is_content_hateful,
+                is_audio_hateful=is_audio_hateful
             )
             return Response(status=201)
         except Exception as e:

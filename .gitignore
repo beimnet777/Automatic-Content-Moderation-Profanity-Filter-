@@ -1,6 +1,7 @@
 # Ignore media files in the backend folder
 /backend/mediafiles/*
 /backend/mediafiles/**
+/backend/mediafiles/
 
 # Ignore Python cache in the backend folder
 /backend/**/__pycache__/**

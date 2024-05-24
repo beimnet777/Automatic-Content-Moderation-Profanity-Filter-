@@ -26,6 +26,7 @@ export default function Comment({ postId, title }: any) {
     });
 
     if (response.status === 201) {
+      setCommentInput("");
       fetch(`${API_BASE_URL}/posts/comments/${postId}/`, {
         headers: getHeaders(session?.user?.accessToken),
       })
